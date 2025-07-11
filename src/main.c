@@ -21,6 +21,12 @@
 #define BRICK_H    20
 #define BRICK_SP    4   // espaçamento
 
+// Sons do jogo
+static Sound paddleHitSound;
+static Sound brickHitSound;
+static Sound gameOverSound;
+static Sound restartSound;
+
 typedef struct {
     Rectangle rect;
     bool alive;
@@ -31,6 +37,22 @@ typedef struct {
     Vector2 pos, vel;
     float radius;
 } Ball;
+
+// Função para carregar os sons
+static void LoadSounds(void) {
+    paddleHitSound = LoadSound("assets/sounds/paddle_hit.wav");
+    brickHitSound = LoadSound("assets/sounds/brick_hit.wav");
+    gameOverSound = LoadSound("assets/sounds/game_over.wav");
+    restartSound = LoadSound("assets/sounds/restart.wav");
+}
+
+// Função para descarregar os sons
+static void UnloadSounds(void) {
+    UnloadSound(paddleHitSound);
+    UnloadSound(brickHitSound);
+    UnloadSound(gameOverSound);
+    UnloadSound(restartSound);
+}
 
 static void InitBricks(Brick bricks[ROWS][COLS]) {
     const int offsetX = (SCREEN_W - (COLS * (BRICK_W + BRICK_SP) - BRICK_SP)) / 2;
@@ -56,6 +78,10 @@ static int ClampInt(int value, int min, int max)  {
 int main(void) {
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(SCREEN_W, SCREEN_H, "Arkanoid – Raylib");
+    
+    // Inicializar áudio
+    InitAudioDevice();
+    LoadSounds();
 
     Rectangle paddle = {
         .x = (SCREEN_W - PADDLE_W) / 2.0f,
@@ -84,6 +110,7 @@ int main(void) {
 
         // Reiniciar
         if (gameOver && IsKeyPressed(KEY_SPACE)) {
+            PlaySound(restartSound);
             ball.pos = (Vector2){ SCREEN_W / 2.0f, SCREEN_H / 2.0f };
             ball.vel = (Vector2){ GetRandomValue(-240, 240), -240 };
             paddle.x = (SCREEN_W - PADDLE_W) / 2.0f;
@@ -112,11 +139,16 @@ int main(void) {
                 ball.vel.x *= -1.0f;
             if (ball.pos.y <= ball.radius)
                 ball.vel.y *= -1.0f;
-            if (ball.pos.y >= SCREEN_H + ball.radius)
+            if (ball.pos.y >= SCREEN_H + ball.radius) {
+                if (!gameOver) {
+                    PlaySound(gameOverSound);
+                }
                 gameOver = true;
+            }
 
             // paddle
             if (CheckCollisionCircleRec(ball.pos, ball.radius, paddle)) {
+                PlaySound(paddleHitSound);
                 ball.vel.y = -fabsf(ball.vel.y);            // sempre para cima
                 float hit = (ball.pos.x - (paddle.x + PADDLE_W/2.0f)) / (PADDLE_W/2.0f);
                 ball.vel.x = 300 * hit;
@@ -129,6 +161,7 @@ int main(void) {
                 if (!b->alive) continue;
 
                 if (CheckCollisionCircleRec(ball.pos, ball.radius, b->rect)) {
+                    PlaySound(brickHitSound);
                     b->alive = false;
                     score += 10;
                     ball.vel.y *= -1.0f;
@@ -170,6 +203,9 @@ int main(void) {
         EndDrawing();
     }
 
+    // Limpeza
+    UnloadSounds();
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }

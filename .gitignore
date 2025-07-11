@@ -1,32 +1,51 @@
-# Binários de build
+# Executáveis
 arkanoid
-build/
-
-# Arquivos temporários
-*.o
-*.obj
 *.exe
 *.out
-*.log
-*.tmp
-*.swp
 
-# Arquivos de backup
+# Arquivos de objeto
+*.o
+*.obj
+
+# Arquivos de biblioteca
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+
+# Arquivos de debug
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Arquivos temporários
+*.tmp
+*.temp
 *~
 
-# Arquivos de sistema
+# Diretórios de build
+build/
+bin/
+obj/
+Debug/
+Release/
+
+# Arquivos do sistema
 .DS_Store
 Thumbs.db
 
-# Arquivos de editor/IDE
+# IDEs e editores
 .vscode/
-*.code-workspace
-*.sublime*
 .idea/
-*.iml
+*.swp
+*.swo
+*~
 
-# Bibliotecas compiladas
-raylib/build/
+# Logs
+*.log
 
-# Outros
-*.bak 
+# Arquivos de configuração local
+config.local
+.env 
