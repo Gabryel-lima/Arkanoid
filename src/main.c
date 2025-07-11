@@ -84,8 +84,8 @@ int main(void) {
 
         // Reiniciar
         if (gameOver && IsKeyPressed(KEY_SPACE)) {
-            ball.pos = (Vector2){ SCREEN_W/2.0f, SCREEN_H/2.0f };
-            ball.vel = (Vector2){ 240, -240 };
+            ball.pos = (Vector2){ SCREEN_W / 2.0f, SCREEN_H / 2.0f };
+            ball.vel = (Vector2){ GetRandomValue(-240, 240), -240 };
             paddle.x = (SCREEN_W - PADDLE_W) / 2.0f;
             InitBricks(bricks);
             score = 0;
@@ -143,6 +143,12 @@ int main(void) {
         BeginDrawing();
             ClearBackground(BLACK);
 
+            // Bordas visuais
+            DrawRectangle(0, 0, SCREEN_W, 4, WHITE); // Topo
+            DrawRectangle(0, SCREEN_H - 4, SCREEN_W, 4, WHITE); // Base
+            DrawRectangle(0, 0, 4, SCREEN_H, WHITE); // Esquerda
+            DrawRectangle(SCREEN_W - 4, 0, 4, SCREEN_H, WHITE); // Direita
+
             // Bricks
             for (int r = 0; r < ROWS; ++r)
             for (int c = 0; c < COLS; ++c)
@@ -166,4 +172,4 @@ int main(void) {
 
     CloseWindow();
     return 0;
-} 
+}
