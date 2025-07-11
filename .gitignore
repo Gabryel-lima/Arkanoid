@@ -1,0 +1,32 @@
+# Binários de build
+arkanoid
+build/
+
+# Arquivos temporários
+*.o
+*.obj
+*.exe
+*.out
+*.log
+*.tmp
+*.swp
+
+# Arquivos de backup
+*~
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de editor/IDE
+.vscode/
+*.code-workspace
+*.sublime*
+.idea/
+*.iml
+
+# Bibliotecas compiladas
+raylib/build/
+
+# Outros
+*.bak 
