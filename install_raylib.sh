@@ -8,6 +8,11 @@ sudo apt install -y build-essential cmake git libasound2-dev libpulse-dev libx11
 # Caminho do diretório raylib (assume que está na raiz do projeto)
 RAYLIB_DIR="$(dirname "$0")/raylib"
 
+# Clona raylib se não existir
+if [ ! -d "$RAYLIB_DIR" ]; then
+    git clone https://github.com/raysan5/raylib.git "$RAYLIB_DIR"
+fi
+
 # Compila e instala a raylib
 cd "$RAYLIB_DIR"
 mkdir -p build
