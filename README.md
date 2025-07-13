@@ -190,7 +190,7 @@ PlaySound(paddleHitSound);
 
 Este projeto foi desenvolvido como parte de uma série educativa sobre programação de jogos. Os vídeos cobrem:
 
-1. **Episódio 1:** Introdução e Setup do Ambiente
+1. **Episódio 1:** [Introdução e Setup do Ambiente](https://youtu.be/586GFDrrIUQ)
 2. **Episódio 2:** Estruturas Básicas e Renderização
 3. **Episódio 3:** Física e Movimento da Bola
 4. **Episódio 4:** Sistema de Colisões
