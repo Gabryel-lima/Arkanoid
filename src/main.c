@@ -91,7 +91,7 @@ static int ClampInt(int value, int min, int max)  {
 static void Reinit(Ball* ball, Rectangle* paddle, Brick bricks[ROWS][COLS], int *score, bool *gameOver) {
     PlaySound(restartSound);
     CreateBall(ball);
-    CreatePaddle(paddle);
+    CreatePaddle(paddle);;
     InitBricks(bricks);
     *score = 0;
     *gameOver = false;
@@ -217,7 +217,8 @@ int main(void) {
                     DrawRectangleRec(bricks[r][c].rect, bricks[r][c].color);
 
             // Paddle & Ball
-            DrawRectangleRec(paddle, WHITE);
+            // DrawRectangleRec(paddle, WHITE);
+            DrawRectangleRounded(paddle, 0.6f, 10, WHITE);
             DrawCircleV(ball.pos, ball.radius, YELLOW);
 
             // UI
