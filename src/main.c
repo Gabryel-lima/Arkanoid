@@ -38,6 +38,19 @@ typedef struct {
     float radius;
 } Ball;
 
+static void CreatePaddle(Rectangle* paddle) {
+    paddle->x = (SCREEN_W - PADDLE_W) / 2.0f;
+    paddle->y = SCREEN_H - 40;
+    paddle->width  = PADDLE_W;
+    paddle->height = PADDLE_H;
+}
+
+static void CreateBall(Ball* ball) {
+    ball->pos = (Vector2) { SCREEN_W / 2.0f, SCREEN_H / 2.0f };
+    ball->vel = (Vector2) { GetRandomValue(-240, 240), -240 };   // px/s
+    ball->radius = BALL_R;
+}
+
 // Função para carregar os sons
 static void LoadSounds(void) {
     paddleHitSound = LoadSound("assets/sounds/paddle_hit.wav");
@@ -75,6 +88,15 @@ static int ClampInt(int value, int min, int max)  {
     return value;
 }
 
+static void Reinit(Ball* ball, Rectangle* paddle, Brick bricks[ROWS][COLS], int *score, bool *gameOver) {
+    PlaySound(restartSound);
+    CreateBall(ball);
+    CreatePaddle(paddle);
+    InitBricks(bricks);
+    *score = 0;
+    *gameOver = false;
+}
+
 int main(void) {
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(SCREEN_W, SCREEN_H, "Arkanoid – Raylib");
@@ -83,40 +105,31 @@ int main(void) {
     InitAudioDevice();
     LoadSounds();
 
-    Rectangle paddle = {
-        .x = (SCREEN_W - PADDLE_W) / 2.0f,
-        .y = SCREEN_H - 40,
-        .width  = PADDLE_W,
-        .height = PADDLE_H
-    };
+    // Paddle
+    Rectangle paddle;
+    CreatePaddle(&paddle);
 
-    Ball ball = {
-        .pos = { SCREEN_W / 2.0f, SCREEN_H / 2.0f },
-        .vel = { 240, -240 },   // px/s
-        .radius = BALL_R
-    };
+    // Ball
+    Ball ball;
+    CreateBall(&ball);
 
+    // Brick
     Brick bricks[ROWS][COLS];
     InitBricks(bricks);
 
+    // States
     int score = 0;
     bool gameOver = false;
 
+    // Vsync
     SetTargetFPS(60);
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
         /* ---------- Lógica ---------- */
-
         // Reiniciar
         if (gameOver && IsKeyPressed(KEY_SPACE)) {
-            PlaySound(restartSound);
-            ball.pos = (Vector2){ SCREEN_W / 2.0f, SCREEN_H / 2.0f };
-            ball.vel = (Vector2){ GetRandomValue(-240, 240), -240 };
-            paddle.x = (SCREEN_W - PADDLE_W) / 2.0f;
-            InitBricks(bricks);
-            score = 0;
-            gameOver = false;
+            Reinit(&ball, &paddle, bricks, &score, &gameOver);
         }
 
         // Movimento do paddle (teclado ou mouse)
