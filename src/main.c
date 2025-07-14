@@ -150,7 +150,7 @@ int main(void) {
             if (CheckCollisionCircleRec(ball.pos, ball.radius, paddle)) {
                 PlaySound(paddleHitSound);
                 ball.vel.y = -fabsf(ball.vel.y);            // sempre para cima
-                float hit = (ball.pos.x - (paddle.x + PADDLE_W/2.0f)) / (PADDLE_W/2.0f);
+                float hit = (ball.pos.x - (paddle.x + PADDLE_W / 2.0f)) / (PADDLE_W / 2.0f);
                 ball.vel.x = 300 * hit;
             }
 
@@ -196,8 +196,8 @@ int main(void) {
             DrawText(TextFormat("SCORE: %05i", score), 10, 10, 20, RAYWHITE);
             if (gameOver)
                 DrawText("GAME OVER  –  SPACE para reiniciar",
-                         SCREEN_W/2 - MeasureText("GAME OVER  –  SPACE para reiniciar", 20)/2,
-                         SCREEN_H/2 - 10, 20, RED);
+                         SCREEN_W / 2 - MeasureText("GAME OVER  –  SPACE para reiniciar", 20) / 2,
+                         SCREEN_H / 2 - 10, 20, RED);
 
             DrawFPS(SCREEN_W - 90, 10);
         EndDrawing();

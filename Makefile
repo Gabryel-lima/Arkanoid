@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -std=c99 -O2 `pkg-config --cflags raylib`
 LDFLAGS = `pkg-config --libs raylib` -lm
 SRC = src/main.c
-BIN = arkanoid
+BIN = Arkanoid
 
 all: $(BIN)
 
