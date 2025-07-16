@@ -91,7 +91,7 @@ static int ClampInt(int value, int min, int max)  {
 static void Reinit(Ball* ball, Rectangle* paddle, Brick bricks[ROWS][COLS], int *score, bool *gameOver) {
     PlaySound(restartSound);
     CreateBall(ball);
-    CreatePaddle(paddle);;
+    CreatePaddle(paddle);
     InitBricks(bricks);
     *score = 0;
     *gameOver = false;
