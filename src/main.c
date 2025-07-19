@@ -4,22 +4,13 @@
  ********************************************************************/
 
 #include "raylib.h"
+#include "game_defs.h"
+#include "bot.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
-
-#define SCREEN_W   800
-#define SCREEN_H   600
-
-#define PADDLE_W   100
-#define PADDLE_H    20
-#define BALL_R      8
-#define ROWS         5
-#define COLS        10
-#define BRICK_W    70
-#define BRICK_H    20
-#define BRICK_SP    4   // espaçamento
+#include <assert.h>
 
 // Sons do jogo
 static Sound paddleHitSound;
@@ -32,11 +23,6 @@ typedef struct {
     bool alive;
     Color color;
 } Brick;
-
-typedef struct {
-    Vector2 pos, vel;
-    float radius;
-} Ball;
 
 static void CreatePaddle(Rectangle* paddle) {
     paddle->x = (SCREEN_W - PADDLE_W) / 2.0f;
@@ -97,6 +83,8 @@ static void Reinit(Ball* ball, Rectangle* paddle, Brick bricks[ROWS][COLS], int 
     *gameOver = false;
 }
 
+typedef enum { MENU, JOGO, JOGO_BOT, JOGO_BOT_SEGUIDOR } GameMode;
+
 int main(void) {
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(SCREEN_W, SCREEN_H, "Arkanoid – Raylib");
@@ -121,10 +109,62 @@ int main(void) {
     int score = 0;
     bool gameOver = false;
 
+    // Q-Learning (apenas para o modo bot)
+    float **Q = NULL;
+    float alpha = 0.1f;
+    float gamma = 0.99f;
+    float epsilon = 0.1f;
+    int last_state = -1, last_action = -1;
+
     // Vsync
     SetTargetFPS(60);
+    GameMode mode = MENU;
+    int menuOption = 0; // 0 = Jogador, 1 = Bot Q-Learning, 2 = Bot Seguidor
+    const char* menuItems[3] = {
+        "Jogar Manualmente",
+        "Modo Bot (Q-Learning)",
+        "Modo Bot (Seguidor)"
+    };
+
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
+
+        // Inicializa Q-table ao entrar no modo bot
+        if (mode == JOGO_BOT && Q == NULL) {
+            Q = init_q_table();
+            last_state = -1;
+            last_action = -1;
+            printf("[DEBUG] Q-table inicializada.\n");
+        }
+        // Libera Q-table ao sair do modo bot
+        if (mode != JOGO_BOT && Q != NULL) {
+            for (int i = 0; i < N_STATES; i++) free(Q[i]);
+            free(Q); Q = NULL;
+            printf("[DEBUG] Q-table liberada.\n");
+        }
+
+        if (mode == MENU) {
+            // Navegação do menu
+            if (IsKeyPressed(KEY_UP))   menuOption = (menuOption + 2) % 3;
+            if (IsKeyPressed(KEY_DOWN)) menuOption = (menuOption + 1) % 3;
+            if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER)) {
+                if (menuOption == 0) mode = JOGO;
+                else if (menuOption == 1) mode = JOGO_BOT;
+                else if (menuOption == 2) mode = JOGO_BOT_SEGUIDOR;
+                Reinit(&ball, &paddle, bricks, &score, &gameOver);
+            }
+            // Render do menu
+            BeginDrawing();
+                ClearBackground(BLACK);
+                DrawText("ARKANOID", SCREEN_W / 2 - MeasureText("ARKANOID", 40) / 2, 100, 40, YELLOW);
+                for (int i = 0; i < 3; i++) {
+                    Color color = (i == menuOption) ? RED : RAYWHITE;
+                    DrawText(menuItems[i], SCREEN_W / 2 - MeasureText(menuItems[i], 24) / 2, 220 + i*40, 24, color);
+                }
+                DrawText("Use ↑/↓ para escolher e ENTER/ESPAÇO para confirmar", SCREEN_W / 2 - 220, 350, 18, GRAY);
+            EndDrawing();
+            continue;
+        }
 
         /* ---------- Lógica ---------- */
         // Reiniciar
@@ -132,14 +172,63 @@ int main(void) {
             Reinit(&ball, &paddle, bricks, &score, &gameOver);
         }
 
-        // Movimento do paddle (teclado ou mouse)
-        if (!gameOver) {
-            if (IsKeyDown(KEY_LEFT))  paddle.x -= 450 * dt;
-            if (IsKeyDown(KEY_RIGHT)) paddle.x += 450 * dt;
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-                paddle.x = GetMouseX() - PADDLE_W / 2.0f;
+        // --- Reinício automático no modo bot ---
+        if (mode == JOGO_BOT && gameOver) {
+            Reinit(&ball, &paddle, bricks, &score, &gameOver);
+            last_state = -1;
+            last_action = -1;
+        }
 
-            paddle.x = ClampInt(paddle.x, 0, SCREEN_W - PADDLE_W);
+        // Movimento do paddle (teclado ou mouse ou bot)
+        if (!gameOver) {
+            if (mode == JOGO) {
+                if (IsKeyDown(KEY_LEFT))  paddle.x -= 450 * dt;
+                if (IsKeyDown(KEY_RIGHT)) paddle.x += 450 * dt;
+                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+                    paddle.x = GetMouseX() - PADDLE_W / 2.0f;
+                paddle.x = ClampInt(paddle.x, 0, SCREEN_W - PADDLE_W);
+            } else if (mode == JOGO_BOT) {
+                int state = encode_state(paddle, ball);
+                assert(state >= 0 && state < N_STATES);
+                int action;
+                if (((float)rand() / RAND_MAX) < epsilon) {
+                    action = GetRandomValue(0, N_ACTIONS-1); // Exploração
+                } else {
+                    float maxQ = Q[state][0];
+                    int bestActions[N_ACTIONS], nBest = 1;
+                    bestActions[0] = 0;
+                    for (int a = 1; a < N_ACTIONS; a++) {
+                        if (Q[state][a] > maxQ) {
+                            maxQ = Q[state][a];
+                            bestActions[0] = a;
+                            nBest = 1;
+                        } else if (Q[state][a] == maxQ) {
+                            bestActions[nBest++] = a;
+                        }
+                    }
+                    action = bestActions[GetRandomValue(0, nBest-1)];
+                }
+                float move = 0;
+                if (action == 0) move = -450 * dt; // Esquerda
+                else if (action == 2) move =  450 * dt; // Direita
+                paddle.x += move;
+                paddle.x = ClampInt(paddle.x, 0, SCREEN_W - PADDLE_W);
+
+                if (last_state != -1 && last_action != -1) {
+                    float reward = 0.0f;
+                    if (gameOver) reward = -1.0f;
+                    else if (CheckCollisionCircleRec(ball.pos, ball.radius, paddle)) reward = 1.0f;
+                    int next_state = state;
+                    assert(last_state >= 0 && last_state < N_STATES);
+                    q_learning_update(Q, last_state, last_action, reward, next_state, alpha, gamma, N_ACTIONS);
+                }
+                last_state = state;
+                last_action = action;
+            } else if (mode == JOGO_BOT_SEGUIDOR) {
+                if (ball.pos.x < paddle.x + PADDLE_W / 2) paddle.x -= 450 * dt;
+                else if (ball.pos.x > paddle.x + PADDLE_W / 2) paddle.x += 450 * dt;
+                paddle.x = ClampInt(paddle.x, 0, SCREEN_W - PADDLE_W);
+            }
         }
 
         // Movimento da bola
