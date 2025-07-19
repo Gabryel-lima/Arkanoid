@@ -161,7 +161,7 @@ int main(void) {
                     Color color = (i == menuOption) ? RED : RAYWHITE;
                     DrawText(menuItems[i], SCREEN_W / 2 - MeasureText(menuItems[i], 24) / 2, 220 + i*40, 24, color);
                 }
-                DrawText("Use ↑/↓ para escolher e ENTER/ESPAÇO para confirmar", SCREEN_W / 2 - 220, 350, 18, GRAY);
+                DrawText("Use ↑/↓ para escolher e ENTER/ESPAÇO para confirmar", SCREEN_W / 2 - 220, 350, 16, GRAY);
             EndDrawing();
             continue;
         }
