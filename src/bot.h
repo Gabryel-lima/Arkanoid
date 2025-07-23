@@ -69,4 +69,32 @@ float **init_q_table(void);
  */
 void q_learning_update(float **Q, int state, int action, float reward, int next_state, float alpha, float gamma, int num_actions);
 
+/**
+ * @brief Encontra o índice do maior valor em um vetor de floats.
+ *
+ * Percorre o vetor @p arr de tamanho @p len e retorna o índice
+ * do elemento cuja magnitude é máxima. Em caso de empate, retorna
+ * o primeiro índice encontrado.
+ *
+ * @param arr  Ponteiro para o primeiro elemento do vetor de valores.
+ * @param len  Número de elementos no vetor @p arr.
+ * @return     Índice (0 ≤ índice < @p len) do elemento com maior valor.
+ */
+int argmax(const float *arr, int len);
+
+/**
+ * @brief Seleciona uma ação usando a política ε-greedy.
+ *
+ * Com probabilidade @p epsilon escolhe uma ação aleatória
+ * (exploração). Caso contrário, escolhe a ação que maximiza
+ * a estimativa de recompensa futura no estado atual (exploração greedy).
+ *
+ * @param Q        Tabela Q, matriz de dimensões [N_STATES][N_ACTIONS],
+ *                 contendo os valores de Q(s,a) para cada par estado‑ação.
+ * @param state    Índice do estado atual (0 ≤ state < N_STATES).
+ * @param epsilon  Probabilidade de explorar (0.0 ≤ epsilon ≤ 1.0).
+ * @return         Índice da ação selecionada (0 ≤ ação < N_ACTIONS).
+ */
+int choose_action(float **Q, int state, float epsilon);
+
 #endif // BOT_H
