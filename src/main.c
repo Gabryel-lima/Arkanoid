@@ -17,12 +17,6 @@ static Sound brickHitSound;
 static Sound gameOverSound;
 static Sound restartSound;
 
-typedef struct {
-    Rectangle rect;
-    bool alive;
-    Color color;
-} Brick;
-
 static void CreatePaddle(Rectangle* paddle) {
     paddle->x = (SCREEN_W - PADDLE_W) / 2.0f;
     paddle->y = SCREEN_H - 40;

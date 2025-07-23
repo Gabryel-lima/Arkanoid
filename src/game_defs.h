@@ -19,4 +19,10 @@ typedef struct {
     float radius;
 } Ball;
 
+typedef struct {
+    Rectangle rect;
+    bool alive;
+    Color color;
+} Brick;
+
 #endif // GAME_DEFS_H 
