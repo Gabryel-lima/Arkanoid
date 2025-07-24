@@ -14,11 +14,19 @@
 #define BRICK_H    20
 #define BRICK_SP    4   // espaçamento
 
+// Game config
+typedef enum GameScreen {
+    Menu, 
+    gameOver
+} GameScreen;
+
+// Ball
 typedef struct {
     Vector2 pos, vel;
     float radius;
 } Ball;
 
+// Brick
 typedef struct {
     Rectangle rect;
     bool alive;

@@ -2,7 +2,7 @@
 #define BOT_H
 
 #include "raylib.h"
-#include "game_defs.h"
+#include "defs.h"
 
 // Quantidade de segmentos para a posição do paddle no eixo X
 #define N_PADDLE_X   12   
