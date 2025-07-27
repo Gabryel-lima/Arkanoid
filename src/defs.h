@@ -1,5 +1,5 @@
-#ifndef GAME_DEFS_H
-#define GAME_DEFS_H
+#ifndef DEFS_H
+#define DEFS_H
 
 #include "raylib.h"
 
@@ -10,14 +10,15 @@
 #define BALL_R      8
 #define ROWS         5
 #define COLS        10
-#define BRICK_W    70
-#define BRICK_H    20
+#define BRICK_WIDTH    70
+#define BRICK_HEIGHT    20
 #define BRICK_SP    4   // espaçamento
 
 // Game config
 typedef enum GameScreen {
     Menu, 
-    gameOver
+    gameOver,
+    score
 } GameScreen;
 
 // Ball
@@ -33,4 +34,4 @@ typedef struct {
     Color color;
 } Brick;
 
-#endif // GAME_DEFS_H 
+#endif // DEFS_H 

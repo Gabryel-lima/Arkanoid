@@ -5,17 +5,13 @@
 
 #include "raylib.h"
 #include "defs.h"
+#include "brick.h"
+#include "sound.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
 #include <assert.h>
-
-// Sons do jogo
-static Sound paddleHitSound;
-static Sound brickHitSound;
-static Sound gameOverSound;
-static Sound restartSound;
 
 static void CreatePaddle(Rectangle* paddle) {
     paddle->x = (SCREEN_W - PADDLE_W) / 2.0f;
@@ -28,37 +24,6 @@ static void CreateBall(Ball* ball) {
     ball->pos = (Vector2) { SCREEN_W / 2.0f, SCREEN_H / 2.0f };
     ball->vel = (Vector2) { GetRandomValue(-240, 240), -240 };   // px/s
     ball->radius = BALL_R;
-}
-
-// Função para carregar os sons
-static void LoadSounds(void) {
-    paddleHitSound = LoadSound("assets/sounds/paddle_hit.wav");
-    brickHitSound = LoadSound("assets/sounds/brick_hit.wav");
-    gameOverSound = LoadSound("assets/sounds/game_over.wav");
-    restartSound = LoadSound("assets/sounds/restart.wav");
-}
-
-// Função para descarregar os sons
-static void UnloadSounds(void) {
-    UnloadSound(paddleHitSound);
-    UnloadSound(brickHitSound);
-    UnloadSound(gameOverSound);
-    UnloadSound(restartSound);
-}
-
-static void InitBricks(Brick bricks[ROWS][COLS]) {
-    const int offsetX = (SCREEN_W - (COLS * (BRICK_W + BRICK_SP) - BRICK_SP)) / 2;
-    const int offsetY = 60;
-
-    for (int r = 0; r < ROWS; ++r)
-    for (int c = 0; c < COLS; ++c) {
-        bricks[r][c].rect = (Rectangle){
-            offsetX + c * (BRICK_W + BRICK_SP),
-            offsetY + r * (BRICK_H + BRICK_SP),
-            BRICK_W, BRICK_H };
-        bricks[r][c].alive = true;
-        bricks[r][c].color = ColorFromHSV(r * 36.0f, 0.7f, 0.9f);
-    }
 }
 
 static int ClampInt(int value, int min, int max)  {
@@ -97,6 +62,7 @@ int main(void) {
     InitBricks(bricks);
 
     // States
+    //bool Menu = false;
     int score = 0;
     bool gameOver = false;
 
@@ -145,37 +111,7 @@ int main(void) {
                 float hit = (ball.pos.x - (paddle.x + PADDLE_W / 2.0f)) / (PADDLE_W / 2.0f);
                 ball.vel.x = 300 * hit;
             }
-
-        // tijolos
-        for (int r = 0; r < ROWS; ++r)
-            for (int c = 0; c < COLS; ++c) {
-                Brick *b = &bricks[r][c];
-                if (!b->alive) continue;
-
-                if (CheckCollisionCircleRec(ball.pos, ball.radius, b->rect)) {
-                    PlaySound(brickHitSound);
-                    b->alive = false;
-                    score += 10;
-
-                    // Calcula as distâncias das bordas da bola em relação ao bloco
-                    float dist_top    = fabsf((ball.pos.y + ball.radius) - b->rect.y);
-                    float dist_bottom = fabsf((ball.pos.y - ball.radius) - (b->rect.y + b->rect.height));
-                    float dist_left   = fabsf((ball.pos.x + ball.radius) - b->rect.x);
-                    float dist_right  = fabsf((ball.pos.x - ball.radius) - (b->rect.x + b->rect.width));
-
-                    // Verifica se a colisão é mais próxima dos lados vertical ou horizontal
-                    if (fminf(dist_top, dist_bottom) < fminf(dist_left, dist_right)) {
-                        // Colisão no topo ou na base do bloco, inverte o eixo Y
-                        ball.vel.y *= -1.0f;
-                    } else {
-                        // Colisão nos lados esquerdo ou direito do bloco, inverte o eixo X
-                        ball.vel.x *= -1.0f;
-                    }
-
-                    goto skipRemaining; // evita multi-colisão no mesmo frame
-                }
-            }
-        skipRemaining: ;
+            CreateBricks(bricks, &ball, &score);
         }
 
         /* ---------- Render ---------- */
