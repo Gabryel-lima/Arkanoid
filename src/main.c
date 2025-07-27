@@ -41,6 +41,14 @@ static void Reinit(Ball* ball, Rectangle* paddle, Brick bricks[ROWS][COLS], int 
     *gameOver = false;
 }
 
+static void DrawBorders(void) {
+    // Bordas visuais
+    DrawRectangle(0, 0, SCREEN_W, 4, WHITE); // Topo
+    DrawRectangle(0, SCREEN_H - 4, SCREEN_W, 4, WHITE); // Base
+    DrawRectangle(0, 0, 4, SCREEN_H, WHITE); // Esquerda
+    DrawRectangle(SCREEN_W - 4, 0, 4, SCREEN_H, WHITE); // Direita
+}
+
 int main(void) {
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(SCREEN_W, SCREEN_H, "Arkanoid – Raylib");
@@ -120,16 +128,10 @@ int main(void) {
             ClearBackground(BLACK);
 
             // Bordas visuais
-            DrawRectangle(0, 0, SCREEN_W, 4, WHITE); // Topo
-            DrawRectangle(0, SCREEN_H - 4, SCREEN_W, 4, WHITE); // Base
-            DrawRectangle(0, 0, 4, SCREEN_H, WHITE); // Esquerda
-            DrawRectangle(SCREEN_W - 4, 0, 4, SCREEN_H, WHITE); // Direita
+            DrawBorders();
 
             // Bricks
-            for (int r = 0; r < ROWS; ++r)
-            for (int c = 0; c < COLS; ++c)
-                if (bricks[r][c].alive)
-                    DrawRectangleRec(bricks[r][c].rect, bricks[r][c].color);
+            DrawBricks(bricks);
 
             // Paddle & Ball
             // DrawRectangleRec(paddle, WHITE);
@@ -140,8 +142,8 @@ int main(void) {
             DrawText(TextFormat("SCORE: %05i", score), 10, 10, 20, RAYWHITE);
             if (gameOver)
                 DrawText("GAME OVER  –  SPACE para reiniciar",
-                         SCREEN_W / 2 - MeasureText("GAME OVER  –  SPACE para reiniciar", 20) / 2,
-                         SCREEN_H / 2 - 10, 20, RED);
+                    SCREEN_W / 2 - MeasureText("GAME OVER  –  SPACE para reiniciar", 20) / 2,
+                    SCREEN_H / 2 - 10, 20, RED);
 
             DrawFPS(SCREEN_W - 90, 10);
         EndDrawing();
